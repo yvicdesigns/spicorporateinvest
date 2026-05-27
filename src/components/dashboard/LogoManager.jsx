@@ -249,15 +249,14 @@ const LogoManager = () => {
                       {settings.width}px
                     </span>
                   </div>
-                  <SliderEnhanced 
-                    defaultValue={[settings.width]} 
+                  <SliderEnhanced
                     value={[settings.width]}
-                    min={50} 
-                    max={300} 
-                    step={5} 
+                    min={50}
+                    max={300}
+                    step={5}
                     gradient="from-blue-400 to-blue-600"
                     thumbColor="border-blue-100"
-                    onValueChange={(val) => updateSetting('width', val[0])} 
+                    onValueChange={(val) => updateSetting('width', val[0])}
                   />
                 </div>
 
@@ -271,15 +270,14 @@ const LogoManager = () => {
                       {settings.opacity}%
                     </span>
                   </div>
-                  <SliderEnhanced 
-                    defaultValue={[settings.opacity]} 
+                  <SliderEnhanced
                     value={[settings.opacity]}
-                    min={20} 
-                    max={100} 
-                    step={5} 
+                    min={20}
+                    max={100}
+                    step={5}
                     gradient="from-purple-400 to-purple-600"
                     thumbColor="border-purple-100"
-                    onValueChange={(val) => updateSetting('opacity', val[0])} 
+                    onValueChange={(val) => updateSetting('opacity', val[0])}
                   />
                 </div>
 
@@ -293,15 +291,14 @@ const LogoManager = () => {
                       {settings.paddingX}px
                     </span>
                   </div>
-                  <SliderEnhanced 
-                    defaultValue={[settings.paddingX]} 
+                  <SliderEnhanced
                     value={[settings.paddingX]}
-                    min={0} 
-                    max={100} 
-                    step={2} 
+                    min={0}
+                    max={100}
+                    step={2}
                     gradient="from-teal-400 to-teal-600"
                     thumbColor="border-teal-100"
-                    onValueChange={(val) => updateSetting('paddingX', val[0])} 
+                    onValueChange={(val) => updateSetting('paddingX', val[0])}
                   />
                 </div>
 

@@ -13,7 +13,7 @@ export const useLogoSettings = () => {
 
   const defaultSettings = {
     width: 150,
-    height: 40, // Default to a reasonable pixel height if strict number needed, or use 'auto' logic in component
+    height: 'auto',
     opacity: 100,
     alignment: 'left',
     paddingX: 0

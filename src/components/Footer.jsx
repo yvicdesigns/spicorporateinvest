@@ -139,7 +139,7 @@ const Footer = ({
           <div>
             <span className="text-lg font-semibold mb-4 block primary-accent">{t.followUs}</span>
             <div className="mb-6">
-              <span className="text-gray-600 text-sm block mb-2">Groupe SPI</span>
+              <span className="text-gray-600 text-sm block mb-2">SPI Corporate Invest</span>
               <div className="flex space-x-4 mb-6">
                 {footerData.facebook_url && <a href={footerData.facebook_url} target="_blank" rel="noopener noreferrer" className="bg-gray-200 text-gray-600 p-3 rounded-full hover:bg-blue-600 hover:text-white transition-colors">
                     <Facebook className="h-5 w-5" />
