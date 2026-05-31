@@ -11,7 +11,8 @@ import LogoManager from '@/components/dashboard/LogoManager';
 import ContactManager from '@/components/dashboard/ContactManager';
 import BranchWhatsAppManager from '@/components/dashboard/BranchWhatsAppManager';
 import WhatsAppConfig from '@/components/dashboard/WhatsAppConfig';
-import { LayoutDashboard, Building, Flower, Car, Scissors, ShoppingBasket, Home, Eye, ArrowLeft, ArrowRight, Settings, LayoutTemplate, Lock, LogIn, LogOut, Image as ImageIcon, ShieldCheck, Newspaper, ShoppingCart, Info, Activity, Mail, MessageCircle, PhoneCall } from 'lucide-react';
+import BranchSocialLinksManager from '@/components/dashboard/BranchSocialLinksManager';
+import { LayoutDashboard, Building, Flower, Car, Scissors, ShoppingBasket, Home, Eye, ArrowLeft, ArrowRight, Settings, LayoutTemplate, Lock, LogIn, LogOut, Image as ImageIcon, ShieldCheck, Newspaper, ShoppingCart, Info, Activity, Mail, MessageCircle, PhoneCall, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -57,7 +58,16 @@ const DashboardPage = () => {
   const isAdmin = user?.user_metadata?.admin === true || user?.user_metadata?.admin === 'true';
 
   const poles = [
-    { 
+    {
+      id: 'branch-social-links',
+      label: 'QR Links & Réseaux Sociaux',
+      icon: QrCode,
+      color: 'bg-gradient-to-br from-[#1e3a8a] to-blue-700',
+      shadow: 'shadow-blue-200',
+      description: 'Gérer les réseaux sociaux de chaque branche (Facebook, Instagram, TikTok, WhatsApp…)',
+      type: 'branch-social-links'
+    },
+    {
       id: 'logo',
       label: 'Logo Management',
       icon: Activity,
@@ -292,6 +302,9 @@ const DashboardPage = () => {
   }
 
   const renderContent = () => {
+    if (selectedPole.type === 'branch-social-links') {
+      return <BranchSocialLinksManager />;
+    }
     if (selectedPole.type === 'logo-manager') {
       return <LogoManager />;
     }
