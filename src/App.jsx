@@ -18,6 +18,8 @@ import ProductPreviewPage from '@/pages/ProductPreviewPage';
 import ProductRedirectPage from '@/pages/ProductRedirectPage.jsx';
 import LogoQueryTool from '@/pages/LogoQueryTool.jsx';
 import ProductShareRedirectHandler from '@/pages/ProductShareRedirectHandler.jsx';
+import BranchLinksPage from '@/pages/BranchLinksPage.jsx';
+import BranchQRPage from '@/pages/BranchQRPage.jsx';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/components/ui/use-toast';
 import { Wifi, WifiOff } from 'lucide-react';
@@ -81,9 +83,10 @@ function App() {
   const isPreview = location.pathname.startsWith('/preview');
   const isLogoQuery = location.pathname.startsWith('/logo-query');
   const isShareRedirect = location.pathname.startsWith('/share/');
-  
-  const showMainFooter = !isBranchDetail && !isDashboard && !isPreview && !isLogoQuery && !isShareRedirect;
-  const showHeader = !isDashboard && !isPreview && !isLogoQuery && !isShareRedirect;
+  const isLinksPage = location.pathname === '/links' || location.pathname === '/qr';
+
+  const showMainFooter = !isBranchDetail && !isDashboard && !isPreview && !isLogoQuery && !isShareRedirect && !isLinksPage;
+  const showHeader = !isDashboard && !isPreview && !isLogoQuery && !isShareRedirect && !isLinksPage;
 
   return (
     <HelmetProvider>
@@ -121,6 +124,10 @@ function App() {
             
             {/* Share link redirection */}
             <Route path="/share/:productId" element={<ProductShareRedirectHandler />} />
+
+            {/* Standalone pages (no header/footer) */}
+            <Route path="/links" element={<BranchLinksPage />} />
+            <Route path="/qr" element={<BranchQRPage />} />
             
             <Route path="*" element={<HomePage language={language} />} />
           </Routes>
