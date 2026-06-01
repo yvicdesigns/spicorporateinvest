@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { ArrowRight, Building, Car, Flower, Utensils, Scissors, FolderHeart as HandHeart, Loader2 } from 'lucide-react';
+import { ArrowRight, Building, Car, Flower, Utensils, Scissors, FolderHeart as HandHeart, Leaf, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,7 +22,8 @@ const BranchesPage = ({ language }) => {
         mobility: { title: 'Nouveau Concept', subtitle: 'Mobilité Intelligente', description: 'Pionnier des solutions de transport durables et connectées.' },
         wellness: { title: 'Atelier 5', subtitle: 'Art du Bien-Être', description: 'Une signature unique dans l\'univers du bien-être.' },
         agro: { title: 'La Manne', subtitle: 'Agriculture d\'Avenir', description: 'Engagés pour une agriculture responsable et durable.' },
-        food: { title: 'SPI Alim', subtitle: 'Gastronomie & Terroirs', description: 'Une sélection d\'exception pour les connaisseurs.' }
+        food: { title: 'SPI Alim', subtitle: 'Gastronomie & Terroirs', description: 'Une sélection d\'exception pour les connaisseurs.' },
+        zen: { title: 'Zen-Sens', subtitle: 'Harmonie & Bien-Être', description: 'Un espace de sérénité dédié à l\'éveil des sens et à l\'équilibre intérieur.' }
       }
     },
     en: {
@@ -36,7 +37,8 @@ const BranchesPage = ({ language }) => {
         mobility: { title: 'Nouveau Concept', subtitle: 'Smart Mobility', description: 'Pioneer of sustainable and connected transport solutions.' },
         wellness: { title: 'Atelier 5', subtitle: 'The Art of Wellness', description: 'A unique signature in the world of well-being.' },
         agro: { title: 'La Manne', subtitle: 'Agriculture of the Future', description: 'Committed to responsible and sustainable agriculture.' },
-        food: { title: 'SPI Alim', subtitle: 'Gastronomy & Terroirs', description: 'An exceptional selection for connoisseurs.' }
+        food: { title: 'SPI Alim', subtitle: 'Gastronomy & Terroirs', description: 'An exceptional selection for connoisseurs.' },
+        zen: { title: 'Zen-Sens', subtitle: 'Harmony & Well-Being', description: 'A serene space dedicated to the awakening of the senses and inner balance.' }
       }
     }
   };
@@ -49,7 +51,8 @@ const BranchesPage = ({ language }) => {
     'nouveau-concept': 'https://images.unsplash.com/photo-1698307663492-928dcdd4d960',
     'atelier-5': 'https://images.unsplash.com/photo-1653919551040-ad7759283d50',
     'la-manne': 'https://images.unsplash.com/photo-1643621204445-2681f6815937',
-    'spi-alim': 'https://images.unsplash.com/photo-1672702959512-af149104c388'
+    'spi-alim': 'https://images.unsplash.com/photo-1672702959512-af149104c388',
+    'zen-sens': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'
   };
 
   useEffect(() => {
@@ -90,7 +93,8 @@ const BranchesPage = ({ language }) => {
     { id: 'nouveau-concept', icon: Car, title: t.branches.mobility.title, subtitle: t.branches.mobility.subtitle, description: t.branches.mobility.description, color: 'text-indigo-500' },
     { id: 'atelier-5', icon: Scissors, title: t.branches.wellness.title, subtitle: t.branches.wellness.subtitle, description: t.branches.wellness.description, color: 'text-purple-500' },
     { id: 'la-manne', icon: Flower, title: t.branches.agro.title, subtitle: t.branches.agro.subtitle, description: t.branches.agro.description, color: 'text-green-500' },
-    { id: 'spi-alim', icon: Utensils, title: t.branches.food.title, subtitle: t.branches.food.subtitle, description: t.branches.food.description, color: 'text-amber-500' }
+    { id: 'spi-alim', icon: Utensils, title: t.branches.food.title, subtitle: t.branches.food.subtitle, description: t.branches.food.description, color: 'text-amber-500' },
+    { id: 'zen-sens', icon: Leaf, title: t.branches.zen.title, subtitle: t.branches.zen.subtitle, description: t.branches.zen.description, color: 'text-teal-500' }
   ];
 
   const cardVariants = {

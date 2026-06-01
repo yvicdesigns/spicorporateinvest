@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import {
-  Building2, Car, Sparkles, Wheat, ShoppingBag, Heart,
+  Building2, Car, Sparkles, Wheat, ShoppingBag, Heart, Leaf,
   Facebook, Instagram, Linkedin, Youtube, Phone,
   MessageCircle, Save, Loader2, Link, QrCode, ExternalLink
 } from 'lucide-react';
@@ -23,7 +23,8 @@ const BRANCHES = [
   { id: 'nouveau-concept', name: 'Nouveau Concept',  subtitle: 'Mobilité Intelligente',     icon: Car,        color: 'from-indigo-500 to-indigo-700', border: 'border-t-indigo-500' },
   { id: 'atelier-5',       name: 'Atelier 5',        subtitle: 'Art du Bien-Être',          icon: Sparkles,   color: 'from-purple-500 to-purple-700', border: 'border-t-purple-500' },
   { id: 'la-manne',        name: 'La Manne',         subtitle: "Agriculture d'Avenir",      icon: Wheat,      color: 'from-green-500 to-green-700',   border: 'border-t-green-500'  },
-  { id: 'spi-alim',        name: 'SPI Alim',         subtitle: 'Gastronomie & Terroirs',    icon: ShoppingBag,color: 'from-amber-500 to-amber-700',   border: 'border-t-amber-500'  },
+  { id: 'spi-alim',        name: 'SPI Alim',         subtitle: 'Gastronomie & Terroirs',    icon: ShoppingBag, color: 'from-amber-500 to-amber-700',  border: 'border-t-amber-500'  },
+  { id: 'zen-sens',        name: 'Zen-Sens',         subtitle: 'Harmonie & Bien-Être',      icon: Leaf,        color: 'from-teal-500 to-teal-700',    border: 'border-t-teal-500'   },
 ];
 
 const SOCIAL_FIELDS = [

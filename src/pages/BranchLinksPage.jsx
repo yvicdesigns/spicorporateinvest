@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Building2, Car, Sparkles, Wheat, ShoppingBag, Heart,
+  Building2, Car, Sparkles, Wheat, ShoppingBag, Heart, Leaf,
   Facebook, Instagram, Linkedin, Youtube, Globe, X,
   Phone, MessageCircle, ExternalLink
 } from 'lucide-react';
@@ -20,7 +20,8 @@ const BRANCHES = [
   { id: 'nouveau-concept', name: 'Nouveau Concept', subtitle: 'Mobilité Intelligente',     icon: Car,        gradient: 'from-indigo-600 to-indigo-800', accent: '#6366f1' },
   { id: 'atelier-5',       name: 'Atelier 5',       subtitle: 'Art du Bien-Être',          icon: Sparkles,   gradient: 'from-purple-600 to-purple-800', accent: '#a855f7' },
   { id: 'la-manne',        name: 'La Manne',        subtitle: "Agriculture d'Avenir",      icon: Wheat,      gradient: 'from-green-600 to-green-800',   accent: '#22c55e' },
-  { id: 'spi-alim',        name: 'SPI Alim',        subtitle: 'Gastronomie & Terroirs',    icon: ShoppingBag,gradient: 'from-amber-600 to-amber-800',   accent: '#f59e0b' },
+  { id: 'spi-alim',        name: 'SPI Alim',        subtitle: 'Gastronomie & Terroirs',    icon: ShoppingBag, gradient: 'from-amber-600 to-amber-800',  accent: '#f59e0b' },
+  { id: 'zen-sens',        name: 'Zen-Sens',        subtitle: 'Harmonie & Bien-Être',      icon: Leaf,        gradient: 'from-teal-600 to-teal-800',   accent: '#14b8a6' },
 ];
 
 const SOCIAL_CONFIGS = [

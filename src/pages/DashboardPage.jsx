@@ -12,7 +12,7 @@ import ContactManager from '@/components/dashboard/ContactManager';
 import BranchWhatsAppManager from '@/components/dashboard/BranchWhatsAppManager';
 import WhatsAppConfig from '@/components/dashboard/WhatsAppConfig';
 import BranchSocialLinksManager from '@/components/dashboard/BranchSocialLinksManager';
-import { LayoutDashboard, Building, Flower, Car, Scissors, ShoppingBasket, Home, Eye, ArrowLeft, ArrowRight, Settings, LayoutTemplate, Lock, LogIn, LogOut, Image as ImageIcon, ShieldCheck, Newspaper, ShoppingCart, Info, Activity, Mail, MessageCircle, PhoneCall, QrCode } from 'lucide-react';
+import { LayoutDashboard, Building, Flower, Car, Scissors, ShoppingBasket, Home, Eye, ArrowLeft, ArrowRight, Settings, LayoutTemplate, Lock, LogIn, LogOut, Image as ImageIcon, ShieldCheck, Newspaper, ShoppingCart, Info, Activity, Mail, MessageCircle, PhoneCall, QrCode, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -206,15 +206,26 @@ const DashboardPage = () => {
       description: 'Wellness, beauty and care spaces',
       type: 'list'
     },
-    { 
-      id: 'spi-alim', 
-      label: 'SPI Alim', 
+    {
+      id: 'spi-alim',
+      label: 'SPI Alim',
       table: 'spi_alim_content',
       bucket: 'spi-alim-images',
       icon: ShoppingBasket,
       color: 'bg-gradient-to-br from-orange-400 to-amber-500',
       shadow: 'shadow-orange-200',
       description: 'Fine grocery and food distribution',
+      type: 'list'
+    },
+    {
+      id: 'zen-sens',
+      label: 'Zen-Sens',
+      table: 'zen_sens_content',
+      bucket: 'zen-sens-images',
+      icon: Leaf,
+      color: 'bg-gradient-to-br from-teal-500 to-teal-700',
+      shadow: 'shadow-teal-200',
+      description: 'Harmonie, bien-être et éveil des sens',
       type: 'list'
     },
     { 

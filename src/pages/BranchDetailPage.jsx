@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Building2, Car, Sparkles, Wheat, ShoppingBag, CheckCircle, ArrowLeftCircle, ArrowRightCircle, Mail, Phone, MapPin, Facebook, Instagram, Linkedin, MessageCircle, ImageOff, Heart } from 'lucide-react';
+import { ArrowLeft, Building2, Car, Sparkles, Wheat, ShoppingBag, CheckCircle, ArrowLeftCircle, ArrowRightCircle, Mail, Phone, MapPin, Facebook, Instagram, Linkedin, MessageCircle, ImageOff, Heart, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DynamicGallery from '@/components/DynamicGallery';
 import { supabase } from '@/lib/customSupabaseClient';
@@ -20,7 +20,8 @@ const BRANCH_TABLE_MAP = {
   'la-manne': { table: 'la_manne_content', section: 'la_manne', icon: Wheat },
   'atelier-5': { table: 'atelier5_content', section: 'atelier5', icon: Sparkles },
   'spi-alim': { table: 'spi_alim_content', section: 'spi_alim', icon: ShoppingBag },
-  'rse': { table: 'rse_content', section: 'rse', icon: Heart }
+  'rse': { table: 'rse_content', section: 'rse', icon: Heart },
+  'zen-sens': { table: 'zen_sens_content', section: 'zen_sens', icon: Leaf }
 };
 
 const translations = {
@@ -49,6 +50,9 @@ const translations = {
       },
       'spi-alim': {
         title: 'SPI Alim', subtitle: 'Le Rendez-vous des Épicuriens', description: 'SPI Alim est un manifeste pour le goût. Nos épiceries fines sont des théâtres de la gastronomie, où chaque produit est sélectionné pour son excellence, son histoire et son caractère unique. Nous parcourons le monde et les terroirs pour dénicher des trésors qui transformeront chaque repas en un moment d\'exception.', services: ['Sourcing et sélection de produits gastronomiques rares', 'Curation de caves à vins et spiritueux d\'exception', 'Création d\'expériences de dégustation exclusives', 'Conseil et accompagnement pour les professionnels de la restauration'], keyPoints: ['Sélection Rigoureuse et Exigeante', 'Célébration des Artisans et Producteurs', 'Origines et Terroirs d\'Exception', 'Expérience Client Privilégiée'], galleryImages: [], contactInfo: { address: '303 Place du Marché, Strasbourg', phone: '+33 8 90 12 34 56', email: 'contact@spi-alim.com', social: { facebook: '#', instagram: '#', linkedin: '#' } }
+      },
+      'zen-sens': {
+        title: 'Zen-Sens', subtitle: 'Harmonie & Bien-Être', description: 'Zen-Sens est un espace de sérénité unique, dédié à l\'éveil des sens et à l\'équilibre intérieur. Nous proposons une expérience holistique alliant soins bien-être, aromathérapie et pratiques méditatives pour restaurer l\'harmonie du corps et de l\'esprit dans un cadre exceptionnel.', services: ['Soins bien-être personnalisés et rituels sensoriels', 'Séances de méditation et pleine conscience', 'Aromathérapie et phytothérapie sur-mesure', 'Ateliers de relaxation et gestion du stress'], keyPoints: ['Approche Holistique Globale', 'Cadre Apaisant et Exclusif', 'Praticiens Certifiés', 'Rituels Personnalisés'], galleryImages: [], contactInfo: { address: 'À définir', phone: '', email: 'contact@zen-sens.com', social: { facebook: '#', instagram: '#', linkedin: '#' } }
       }
     }
   },
@@ -72,6 +76,9 @@ const translations = {
       },
       'spi-alim': {
         title: 'SPI Alim', subtitle: 'The Epicurean\'s Rendezvous', description: 'SPI Alim is a manifesto for taste. Our fine food stores are theaters of gastronomy, where each product is selected for its excellence, history, and unique character. We travel the world and its terroirs to unearth treasures that will turn every meal into an exceptional moment.', services: ['Sourcing and selection of rare gastronomic products', 'Curation of exceptional wine and spirits cellars', 'Creation of exclusive tasting experiences', 'Consulting and support for restaurant professionals'], keyPoints: ['Rigorous and Demanding Selection', 'Celebration of Artisans and Producers', 'Exceptional Origins and Terroirs', 'Privileged Customer Experience'], galleryImages: [], contactInfo: { address: '303 Market Square, Strasbourg', phone: '+33 8 90 12 34 56', email: 'contact@spi-alim.com', social: { facebook: '#', instagram: '#', linkedin: '#' } }
+      },
+      'zen-sens': {
+        title: 'Zen-Sens', subtitle: 'Harmony & Well-Being', description: 'Zen-Sens is a unique sanctuary dedicated to the awakening of the senses and inner balance. We offer a holistic experience combining wellness treatments, aromatherapy and meditative practices to restore harmony of body and mind in an exceptional setting.', services: ['Personalized wellness treatments and sensory rituals', 'Meditation and mindfulness sessions', 'Bespoke aromatherapy and phytotherapy', 'Relaxation workshops and stress management'], keyPoints: ['Global Holistic Approach', 'Soothing and Exclusive Setting', 'Certified Practitioners', 'Personalized Rituals'], galleryImages: [], contactInfo: { address: 'To be defined', phone: '', email: 'contact@zen-sens.com', social: { facebook: '#', instagram: '#', linkedin: '#' } }
       }
     }
   }
