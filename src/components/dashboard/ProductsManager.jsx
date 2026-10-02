@@ -11,6 +11,8 @@ import { SHOP_BRANCHES, PRODUCT_TYPES } from '@/lib/shopConstants';
 import { Plus, Trash2, Edit, Loader2, Image as ImageIcon, Search, ShoppingCart, Tag, Euro, X, Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from 'framer-motion';
+import { Switch } from '@/components/ui/switch';
+import { useShopVisibility } from '@/hooks/useShopVisibility';
 
 const ProductsManager = () => {
   const [products, setProducts] = useState([]);
@@ -20,6 +22,18 @@ const ProductsManager = () => {
   const { toast } = useToast();
   const { uploadBucketImage } = useImageManager();
   const [searchQuery, setSearchQuery] = useState('');
+  const { shopVisible, shopVisibilityLoading, updateShopVisibility } = useShopVisibility();
+  const [visibilitySaving, setVisibilitySaving] = useState(false);
+
+  const handleVisibilityChange = async (visible) => {
+    setVisibilitySaving(true);
+    const { error } = await updateShopVisibility(visible);
+    setVisibilitySaving(false);
+    toast(error ? { title: 'Erreur', description: "Impossible de modifier la visibilité de la boutique.", variant: 'destructive' } : {
+      title: visible ? 'Boutique visible' : 'Boutique masquée',
+      description: visible ? 'Le lien Boutique est maintenant visible sur le site.' : 'La boutique reste accessible uniquement avec son lien direct.'
+    });
+  };
 
   // Delete Confirmation State
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -189,6 +203,10 @@ const ProductsManager = () => {
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
+      <div className="flex flex-col gap-4 rounded-2xl border border-blue-100 bg-blue-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div><h3 className="font-bold text-slate-900">Visibilité de la boutique en ligne</h3><p className="mt-1 text-sm text-slate-600">Masquez le lien public sans désactiver l’adresse directe <span className="font-mono">/boutique</span>.</p></div>
+        <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-sm"><span className={`text-sm font-semibold ${shopVisible ? 'text-emerald-700' : 'text-slate-500'}`}>{shopVisible ? 'Visible' : 'Masquée'}</span><Switch checked={shopVisible} onCheckedChange={handleVisibilityChange} disabled={shopVisibilityLoading || visibilitySaving} aria-label="Afficher la boutique dans le site public" /></div>
+      </div>
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h3 className="text-2xl font-bold text-gray-900">Shop Products Management</h3>

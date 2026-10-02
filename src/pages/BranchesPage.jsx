@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { ArrowRight, Building, Car, Flower, Utensils, Scissors, FolderHeart as HandHeart, Leaf, Loader2 } from 'lucide-react';
+import { ArrowRight, Building, Car, Utensils, Scissors, FolderHeart as HandHeart, Leaf, Loader2, Zap } from 'lucide-react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useNavigate } from 'react-router-dom';
+import { getBranchBrand } from '@/lib/branchBranding';
 
 const BranchesPage = ({ language }) => {
   const [branchImages, setBranchImages] = useState({});
@@ -23,7 +24,8 @@ const BranchesPage = ({ language }) => {
         wellness: { title: 'Atelier 5', subtitle: 'Art du Bien-Être', description: 'Une signature unique dans l\'univers du bien-être.' },
         agro: { title: 'La Manne', subtitle: 'Agriculture d\'Avenir', description: 'Engagés pour une agriculture responsable et durable.' },
         food: { title: 'SPI Alim', subtitle: 'Gastronomie & Terroirs', description: 'Une sélection d\'exception pour les connaisseurs.' },
-        zen: { title: 'Zen-Sens', subtitle: 'Harmonie & Bien-Être', description: 'Un espace de sérénité dédié à l\'éveil des sens et à l\'équilibre intérieur.' }
+        zen: { title: 'Zen Sens', subtitle: 'Parfums & Fragrances', description: 'Une maison olfactive dédiée aux parfums, fragrances et créations de caractère.' },
+        energy: { title: 'SPI Energy', subtitle: 'Pétrole & Services', description: 'Des solutions pétrolières fiables pour accompagner les entreprises et les territoires.' }
       }
     },
     en: {
@@ -38,7 +40,8 @@ const BranchesPage = ({ language }) => {
         wellness: { title: 'Atelier 5', subtitle: 'The Art of Wellness', description: 'A unique signature in the world of well-being.' },
         agro: { title: 'La Manne', subtitle: 'Agriculture of the Future', description: 'Committed to responsible and sustainable agriculture.' },
         food: { title: 'SPI Alim', subtitle: 'Gastronomy & Terroirs', description: 'An exceptional selection for connoisseurs.' },
-        zen: { title: 'Zen-Sens', subtitle: 'Harmony & Well-Being', description: 'A serene space dedicated to the awakening of the senses and inner balance.' }
+        zen: { title: 'Zen Sens', subtitle: 'Perfumes & Fragrances', description: 'A fragrance house dedicated to perfumes and distinctive olfactory creations.' },
+        energy: { title: 'SPI Energy', subtitle: 'Oil & Services', description: 'Reliable petroleum solutions supporting businesses and territories.' }
       }
     }
   };
@@ -52,7 +55,8 @@ const BranchesPage = ({ language }) => {
     'atelier-5': 'https://images.unsplash.com/photo-1653919551040-ad7759283d50',
     'la-manne': 'https://images.unsplash.com/photo-1643621204445-2681f6815937',
     'spi-alim': 'https://images.unsplash.com/photo-1672702959512-af149104c388',
-    'zen-sens': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'
+    'zen-sens': 'https://images.unsplash.com/photo-1541643600914-78b084683601',
+    'spi-energy': 'https://images.unsplash.com/photo-1581092160562-40aa08e78837'
   };
 
   useEffect(() => {
@@ -92,9 +96,9 @@ const BranchesPage = ({ language }) => {
     { id: 'sci-espoir', icon: HandHeart, title: t.branches.espoir.title, subtitle: t.branches.espoir.subtitle, description: t.branches.espoir.description, color: 'text-cyan-500' },
     { id: 'nouveau-concept', icon: Car, title: t.branches.mobility.title, subtitle: t.branches.mobility.subtitle, description: t.branches.mobility.description, color: 'text-indigo-500' },
     { id: 'atelier-5', icon: Scissors, title: t.branches.wellness.title, subtitle: t.branches.wellness.subtitle, description: t.branches.wellness.description, color: 'text-purple-500' },
-    { id: 'la-manne', icon: Flower, title: t.branches.agro.title, subtitle: t.branches.agro.subtitle, description: t.branches.agro.description, color: 'text-green-500' },
     { id: 'spi-alim', icon: Utensils, title: t.branches.food.title, subtitle: t.branches.food.subtitle, description: t.branches.food.description, color: 'text-amber-500' },
-    { id: 'zen-sens', icon: Leaf, title: t.branches.zen.title, subtitle: t.branches.zen.subtitle, description: t.branches.zen.description, color: 'text-teal-500' }
+    { id: 'zen-sens', icon: Leaf, title: t.branches.zen.title, subtitle: t.branches.zen.subtitle, description: t.branches.zen.description },
+    { id: 'spi-energy', icon: Zap, title: t.branches.energy.title, subtitle: t.branches.energy.subtitle, description: t.branches.energy.description }
   ];
 
   const cardVariants = {
@@ -121,7 +125,9 @@ const BranchesPage = ({ language }) => {
       <section className="section-padding bg-white">
         <div className="container-custom">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {branches.map((branch, index) => (
+            {branches.map((branch, index) => {
+              const brand = getBranchBrand(branch.id);
+              return (
               <motion.div
                 key={branch.id}
                 custom={index}
@@ -142,22 +148,22 @@ const BranchesPage = ({ language }) => {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                   <div className="absolute bottom-4 left-4">
-                    <div className={`flex items-center justify-center w-12 h-12 bg-white/95 backdrop-blur-sm rounded-xl shadow-md ${branch.color}`}>
-                      <branch.icon className="w-6 h-6" />
+                    <div className="flex items-center justify-center w-16 h-16 bg-white/95 backdrop-blur-sm rounded-xl shadow-md overflow-hidden p-1.5" style={{ color: brand.primary }}>
+                      {brand.logo ? <img src={brand.logo} alt={`Logo ${branch.title}`} className="w-full h-full object-contain" /> : <branch.icon className="w-7 h-7" />}
                     </div>
                   </div>
                 </div>
                 <div className="p-6 flex flex-col flex-grow">
-                  <span className={`font-bold ${branch.color} mb-1`}>{branch.subtitle}</span>
-                  <h3 className="text-2xl font-bold text-blue-900 mb-3">{branch.title}</h3>
+                  <span className="font-bold mb-1" style={{ color: brand.secondary }}>{branch.subtitle}</span>
+                  <h3 className="text-2xl font-bold mb-3" style={{ color: brand.primary }}>{branch.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-grow">{branch.description}</p>
-                  <button className="mt-auto inline-flex items-center font-semibold text-blue-900 group-hover:text-blue-600 transition-colors">
+                  <button className="mt-auto inline-flex items-center font-semibold transition-colors" style={{ color: brand.primary }}>
                     {t.discover}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </button>
                 </div>
               </motion.div>
-            ))}
+            )})}
           </div>
         </div>
       </section>

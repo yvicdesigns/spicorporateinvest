@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Facebook, Instagram, Linkedin, Mail, Phone, MapPin, Lock, MessageCircle } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { SHOP_BRANCHES } from '@/lib/shopConstants';
 import { useNavigate } from 'react-router-dom';
+import { CORPORATE_BRAND, getBranchBrand } from '@/lib/branchBranding';
+import { useShopVisibility } from '@/hooks/useShopVisibility';
 
 // Custom TikTok Icon
 const TikTokIcon = ({
@@ -14,6 +16,7 @@ const Footer = ({
   language
 }) => {
   const navigate = useNavigate();
+  const { shopVisible } = useShopVisibility();
   const [footerData, setFooterData] = useState({
     description_fr: 'Excellence multisectorielle au service de votre développement. Immobilier, mobilité, bien-être, agro-pastoral et épicerie fine.',
     description_en: 'Multisectoral excellence serving your development. Real estate, mobility, wellness, agro-pastoral and fine grocery.',
@@ -26,8 +29,10 @@ const Footer = ({
     linkedin_url: 'https://linkedin.com',
     tiktok_url: ''
   });
+  const [branchWhatsAppNumbers, setBranchWhatsAppNumbers] = useState({});
   useEffect(() => {
     fetchFooterConfig();
+    fetchBranchWhatsAppNumbers();
   }, []);
   const fetchFooterConfig = async () => {
     try {
@@ -43,6 +48,24 @@ const Footer = ({
       }
     } catch (err) {
       console.error('Error loading footer config:', err);
+    }
+  };
+  const fetchBranchWhatsAppNumbers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('branch_whatsapp_config')
+        .select('pole_id, whatsapp_number, is_enabled');
+      if (data && !error) {
+        const map = {};
+        data.forEach(row => {
+          if (row.is_enabled && row.whatsapp_number) {
+            map[row.pole_id] = row.whatsapp_number;
+          }
+        });
+        setBranchWhatsAppNumbers(map);
+      }
+    } catch (err) {
+      console.error('Error loading branch WhatsApp numbers:', err);
     }
   };
   const translations = {
@@ -79,8 +102,7 @@ const Footer = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center mb-4 cursor-pointer" onClick={() => navigate('/')}>
-              <span className="text-2xl font-bold primary-accent">SPI Corporate</span>
-              <span className="text-2xl font-bold secondary-accent ml-2">SPI</span>
+              <img src={CORPORATE_BRAND.logo} alt="SPI Corporate Invest" className="h-20 w-auto max-w-[220px] object-contain object-left" />
             </div>
             <p className="text-gray-600 text-sm leading-relaxed mb-4">
               {language === 'fr' ? footerData.description_fr : footerData.description_en}
@@ -98,11 +120,11 @@ const Footer = ({
                   {t.about}
                 </button>
               </li>
-              <li>
+              {shopVisible && <li>
                 <button onClick={() => navigate('/boutique')} className="text-gray-600 hover:primary-accent transition-colors">
                   {t.shop}
                 </button>
-              </li>
+              </li>}
               <li>
                 <button onClick={() => navigate('/branches')} className="text-gray-600 hover:primary-accent transition-colors">
                   {t.branches}
@@ -156,24 +178,42 @@ const Footer = ({
               </div>
               
               <span className="text-lg font-semibold mb-2 block primary-accent text-sm">{t.whatsapp}</span>
-              <div className="flex flex-wrap gap-2">
-                {SHOP_BRANCHES.map(branch => <a key={branch.id} href={`https://wa.me/${branch.whatsapp}`} target="_blank" rel="noopener noreferrer" className="bg-green-100 text-green-700 p-2 rounded-full hover:bg-green-600 hover:text-white transition-colors text-xs flex items-center" title={branch.name}>
-                        <MessageCircle className="h-3 w-3 mr-1" />
-                        {branch.name.split(' ')[0]}
-                    </a>)}
+              <div className="flex flex-wrap gap-3">
+                {SHOP_BRANCHES.map(branch => {
+                  const brand = getBranchBrand(branch.id);
+                  const whatsappNumber = branchWhatsAppNumbers[branch.id] || branch.whatsapp;
+                  return (
+                    <a
+                      key={branch.id}
+                      href={`https://wa.me/${whatsappNumber}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white p-1.5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+                      style={{ borderColor: `${brand.primary}35` }}
+                      title={`WhatsApp ${branch.name}`}
+                      aria-label={`Contacter ${branch.name} sur WhatsApp`}
+                    >
+                      {brand.logo ? (
+                        <img src={brand.logo} alt={`Logo ${branch.name}`} className="h-full w-full object-contain" />
+                      ) : (
+                        <MessageCircle className="h-6 w-6" style={{ color: brand.primary }} />
+                      )}
+                      <span className="absolute bottom-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 text-white shadow-sm">
+                        <MessageCircle className="h-2.5 w-2.5" />
+                      </span>
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
 
         <div className="border-t border-gray-200 mt-8 pt-8 pb-8">
-          <div className="container-custom flex flex-col md:flex-row justify-between items-center">
+          <div className="container-custom flex justify-center md:justify-start items-center">
              <p className="text-gray-500 text-sm text-center md:text-left">
                 © {new Date().getFullYear()} SPI Corporate Invest. {t.rights}.
              </p>
-             <button onClick={() => navigate('/dashboard')} className="mt-4 md:mt-0 flex items-center text-xs text-gray-400 hover:text-gray-600 transition-colors">
-                <Lock className="w-3 h-3 mr-1" /> Admin Access
-             </button>
           </div>
         </div>
       </div>

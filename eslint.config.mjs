@@ -3,8 +3,16 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 
+const unusedUiScaffolds = [
+	'accordion', 'aspect-ratio', 'calendar', 'carousel', 'chart', 'collapsible',
+	'command', 'context-menu', 'drawer', 'form', 'hover-card', 'input-otp',
+	'menubar', 'navigation-menu', 'popover', 'progress', 'radio-group',
+	'resizable', 'scroll-area', 'separator', 'sonner', 'toggle-group', 'toggle',
+	'tooltip',
+].map((name) => `src/components/ui/${name}.jsx`);
+
 export default [
-	{ ignores: ['node_modules/**', 'dist/**', 'build/**', 'vite.config.js'] },
+	{ ignores: ['node_modules/**', 'dist/**', 'build/**', 'vite.config.js', ...unusedUiScaffolds] },
 	{
 		files: ['**/*.js', '**/*.jsx'],
 		plugins: { react, 'react-hooks': reactHooks, import: importPlugin },

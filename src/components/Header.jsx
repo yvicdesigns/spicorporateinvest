@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Globe, ShoppingBag } from 'lucide-react';
+import { Menu, X, Globe, ShoppingBag, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useWebsiteLogo } from '@/hooks/useWebsiteLogo';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { CORPORATE_BRAND } from '@/lib/branchBranding';
+import GlobalSearchDialog from '@/components/GlobalSearchDialog';
+import { useShopVisibility } from '@/hooks/useShopVisibility';
 
 const Header = ({ language, setLanguage }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { logoUrl, logoSettings } = useWebsiteLogo();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { shopVisible } = useShopVisibility();
 
   const {
     width = 150,
@@ -62,8 +65,7 @@ const Header = ({ language, setLanguage }) => {
     { id: 'contact', label: t.contact, path: '/contact' }
   ];
 
-  // Only show shop link if user is authenticated
-  const menuItems = allMenuItems.filter(item => item.id !== 'shop' || user);
+  const menuItems = allMenuItems.filter(item => item.id !== 'shop' || shopVisible);
 
   const toggleLanguage = () => {
     setLanguage(language === 'fr' ? 'en' : 'fr');
@@ -87,9 +89,9 @@ const Header = ({ language, setLanguage }) => {
           
           <div onClick={() => navigate('/')} className={`flex items-center cursor-pointer flex-shrink-0`} style={{ paddingLeft: `${paddingX}px`, paddingRight: `${paddingX}px` }}>
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              {logoUrl ? (
+              {logoUrl || CORPORATE_BRAND.logo ? (
                 <img 
-                  src={logoUrl} 
+                  src={logoUrl || CORPORATE_BRAND.logo}
                   alt="SPI Corporate Logo" 
                   className="object-contain transition-all duration-300"
                   style={{
@@ -132,11 +134,17 @@ const Header = ({ language, setLanguage }) => {
               <Globe className="h-5 w-5" />
               <span className="ml-1 text-xs font-semibold">{language.toUpperCase()}</span>
             </Button>
+            <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className="text-gray-600 hover:text-blue-900" aria-label="Rechercher sur le site">
+              <Search className="h-5 w-5" />
+            </Button>
           </div>
 
-          <button className={`lg:hidden z-[60] text-gray-800 relative`} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Ouvrir le menu">
-            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          <div className="flex items-center gap-1 lg:hidden">
+            <button className="relative z-[60] p-2 text-gray-800" onClick={() => setSearchOpen(true)} aria-label="Rechercher sur le site"><Search size={23} /></button>
+            <button className={`z-[60] text-gray-800 relative p-2`} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Ouvrir le menu">
+              {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -191,6 +199,7 @@ const Header = ({ language, setLanguage }) => {
           </motion.div>
         )}
       </AnimatePresence>
+      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 };

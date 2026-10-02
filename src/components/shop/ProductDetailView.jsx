@@ -64,7 +64,7 @@ const ProductDetailView = ({ product, isOpen, onClose, language = 'fr' }) => {
     try {
       const message = `${name}\n\n${description ? description + '\n\n' : ''}${shareUrl}`;
       const encodedMessage = encodeURIComponent(message);
-      window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+      window.open(`https://wa.me/?text=${encodedMessage}`, '_blank', 'noopener,noreferrer');
     } catch (err) {
       console.error('WhatsApp share error:', err);
     }

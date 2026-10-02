@@ -25,6 +25,7 @@ const BRANCHES = [
   { id: 'la-manne',        name: 'La Manne',         subtitle: "Agriculture d'Avenir",      icon: Wheat,      color: 'from-green-500 to-green-700',   border: 'border-t-green-500'  },
   { id: 'spi-alim',        name: 'SPI Alim',         subtitle: 'Gastronomie & Terroirs',    icon: ShoppingBag, color: 'from-amber-500 to-amber-700',  border: 'border-t-amber-500'  },
   { id: 'zen-sens',        name: 'Zen-Sens',         subtitle: 'Harmonie & Bien-Être',      icon: Leaf,        color: 'from-teal-500 to-teal-700',    border: 'border-t-teal-500'   },
+  { id: 'spi-energy',      name: 'SPI Energy',       subtitle: 'Pétrole & Services',        icon: Building2,   color: 'from-sky-600 to-blue-800',     border: 'border-t-sky-600'    },
 ];
 
 const SOCIAL_FIELDS = [
@@ -42,7 +43,7 @@ const defaultForm = () => ({
   linkedin_url: '', youtube_url: '', whatsapp: '', phone: ''
 });
 
-const BranchSocialLinksManager = () => {
+const BranchSocialLinksManager = ({ initialBranchId = null }) => {
   const { toast } = useToast();
   const [forms, setForms] = useState(() => {
     const init = {};
@@ -184,21 +185,22 @@ const BranchSocialLinksManager = () => {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-5xl mx-auto">
 
       {/* Header banner */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 rounded-2xl bg-gradient-to-r from-slate-950 to-blue-950 p-6 text-white md:flex-row md:items-center">
         <div className="flex items-center gap-4">
-          <div className="bg-gradient-to-br from-[#1e3a8a] to-blue-700 p-3 rounded-xl text-white shadow-md">
+          <div className="rounded-xl bg-white/10 p-3 text-white ring-1 ring-white/15">
             <Link className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Réseaux Sociaux des Branches</h2>
-            <p className="text-gray-500 text-sm">Ces liens apparaissent dans la modale QR Code quand on clique sur une branche.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-300">Présence digitale</p>
+            <h2 className="mt-1 text-2xl font-bold">Réseaux sociaux {initialBranchId ? 'de la branche' : 'des branches'}</h2>
+            <p className="mt-1 text-sm text-blue-100/70">Ces liens alimentent la page QR et les accès sociaux publics.</p>
           </div>
         </div>
         <a
           href="/qr"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-[#1e3a8a] hover:bg-blue-900 text-white font-semibold px-4 py-2.5 rounded-lg transition-all text-sm shadow-md"
+          className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white hover:text-slate-900"
         >
           <QrCode className="w-4 h-4" />
           Voir le QR Code
@@ -208,7 +210,7 @@ const BranchSocialLinksManager = () => {
 
       {/* Branch cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {BRANCHES.map(branch => {
+        {BRANCHES.filter((branch) => !initialBranchId || branch.id === initialBranchId).map(branch => {
           const Icon = branch.icon;
           const isSaving = saving === branch.id;
           const form = forms[branch.id];
@@ -218,16 +220,16 @@ const BranchSocialLinksManager = () => {
               key={branch.id}
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`bg-white rounded-2xl shadow-md border border-gray-100 border-t-4 ${branch.border} overflow-hidden`}
+              className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
             >
               {/* Card header */}
-              <div className={`bg-gradient-to-r ${branch.color} px-5 py-4 flex items-center gap-3`}>
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50 px-5 py-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-800">
+                  <Icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-white font-bold leading-tight">{branch.name}</p>
-                  <p className="text-white/70 text-xs">{branch.subtitle}</p>
+                  <p className="font-bold leading-tight text-slate-900">{branch.name}</p>
+                  <p className="text-xs text-slate-500">{branch.subtitle}</p>
                 </div>
               </div>
 

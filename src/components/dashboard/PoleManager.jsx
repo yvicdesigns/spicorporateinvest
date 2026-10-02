@@ -6,10 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Trash2, Upload, Plus, FileImage as ImageIcon, Layout, Type, Edit, Save, ImagePlus, MonitorPlay, Star, Info, PanelTop, Grid, RefreshCw, LayoutTemplate } from 'lucide-react';
+import { Loader2, Trash2, Upload, Plus, FileImage as ImageIcon, Layout, Type, Edit, Save, ImagePlus, MonitorPlay, Star, Info, PanelTop, Grid, RefreshCw, LayoutTemplate, PlaySquare, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from "@/components/ui/card";
 
@@ -18,7 +17,7 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('gallery');
   const [editingItem, setEditingItem] = useState(null);
   
   // New state for image replacement
@@ -33,19 +32,25 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
     title: '',
     description: '',
     image: null,
+    images: [],
+    videoUrl: '',
+    thumbnail: null,
     targetBranch: '' // For Branch Cards
   });
 
-  // Defined sections available in the system
-  const availableSections = [
-    { id: 'gallery', label: 'Gallery', icon: ImageIcon },
-    { id: 'slider', label: 'Slider', icon: MonitorPlay },
-    { id: 'hero', label: 'Hero', icon: PanelTop },
-    { id: 'branch_card', label: 'Branch Card', icon: LayoutTemplate },
-    { id: 'features', label: 'Features', icon: Star },
-    { id: 'about', label: 'About', icon: Info },
-    { id: 'branch_details', label: 'Branch Details', icon: Grid }
-  ];
+  const sectionCatalog = {
+    gallery: { id: 'gallery', label: 'Portfolio', description: 'Visible dans la galerie principale de la page.', icon: ImageIcon },
+    slider: { id: 'slider', label: 'Hero — diaporama', description: 'Visible dans le grand visuel placé en haut de la page.', icon: MonitorPlay },
+    video: { id: 'video', label: 'Vidéo de présentation', description: 'Visible dans la section vidéo de la branche.', icon: PlaySquare },
+    branch_card: { id: 'branch_card', label: 'Carte d’une branche', description: 'Visible sur la carte de la branche dans la page d’accueil.', icon: LayoutTemplate },
+    hero: { id: 'hero', label: 'Bannière intérieure', description: 'Visuel de couverture d’une section.', icon: PanelTop },
+    features: { id: 'features', label: 'Mise en avant', description: 'Visible dans les contenus mis en avant.', icon: Star },
+    about: { id: 'about', label: 'Section À propos', description: 'Visible dans la présentation de l’activité.', icon: Info },
+    branch_details: { id: 'branch_details', label: 'Détails de la branche', description: 'Visible dans les informations complémentaires.', icon: Grid }
+  };
+  const isHomepageManager = tableName === 'vision_images';
+  const isBranchManager = tableName?.endsWith('_content') && tableName !== 'rse_content';
+  const availableSections = (isHomepageManager ? ['slider', 'branch_card', 'gallery'] : isBranchManager ? ['slider', 'gallery', 'video'] : ['gallery', 'slider', 'hero', 'features', 'about', 'branch_details']).map((id) => sectionCatalog[id]);
 
   // Branch IDs for tagging
   const branchIds = [
@@ -54,7 +59,9 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
     { id: 'nouveau-concept', label: 'Nouveau Concept' },
     { id: 'atelier-5', label: 'Atelier 5' },
     { id: 'la-manne', label: 'La Manne' },
-    { id: 'spi-alim', label: 'SPI Alim' }
+    { id: 'spi-alim', label: 'SPI Alim' },
+    { id: 'zen-sens', label: 'Zen Sens' },
+    { id: 'spi-energy', label: 'SPI Energy' }
   ];
 
   const getSectionIcon = (sectionId) => {
@@ -254,8 +261,10 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newItem.image && !newItem.title) {
-        toast({ title: "Validation Error", description: "Please provide at least a title or an image.", variant: "destructive" });
+    const isVideoDestination = newItem.sections.includes('video');
+    const isPortfolioDestination = newItem.sections.includes('gallery');
+    if (isVideoDestination ? (!newItem.image && !newItem.videoUrl.trim()) : isPortfolioDestination ? newItem.images.length === 0 : (!newItem.image && !newItem.title)) {
+        toast({ title: "Information manquante", description: isVideoDestination ? "Ajoutez une vidéo ou collez son lien." : "Ajoutez au moins un titre ou une image.", variant: "destructive" });
         return;
     }
 
@@ -273,11 +282,17 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
     try {
       setUploading(true);
       let imageUrl = null;
+      let videoSource = null;
       const folderPrefix = newItem.sections[0] || 'uploads';
 
-      if (newItem.image) {
+      if (isVideoDestination && newItem.image) {
+        videoSource = await handleImageUpload(newItem.image, 'video');
+      } else if (isVideoDestination) {
+        videoSource = newItem.videoUrl.trim();
+      } else if (!isPortfolioDestination && newItem.image) {
         imageUrl = await handleImageUpload(newItem.image, folderPrefix);
       }
+      if (isVideoDestination && newItem.thumbnail) imageUrl = await handleImageUpload(newItem.thumbnail, 'video-thumbnails');
 
       const finalSection = tableName === 'nouveau_concept_content' ? "nouveau_concept" : JSON.stringify(newItem.sections);
       
@@ -287,6 +302,8 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
         title: newItem.title,
         description: newItem.description,
         image_url: imageUrl,
+        content: videoSource,
+        category: isVideoDestination ? 'video' : 'image',
         is_active: true,
       };
 
@@ -295,14 +312,22 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
           payload.tags = [newItem.targetBranch];
       }
 
-      const { error } = await supabase
-        .from(tableName)
-        .insert([payload]);
+      let rowsToInsert = [payload];
+      if (isPortfolioDestination) {
+        rowsToInsert = [];
+        for (const file of newItem.images) {
+          const uploadedUrl = await handleImageUpload(file, 'gallery');
+          const cleanFileName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+          rowsToInsert.push({ ...payload, image_url: uploadedUrl, title: newItem.images.length === 1 && newItem.title.trim() ? newItem.title.trim() : cleanFileName });
+        }
+      }
+
+      const { error } = await supabase.from(tableName).insert(rowsToInsert);
 
       if (error) throw error;
 
-      toast({ title: "Success", description: "Content added successfully!" });
-      setNewItem({ sections: ['gallery'], title: '', description: '', image: null, targetBranch: '' });
+      toast({ title: isPortfolioDestination && rowsToInsert.length > 1 ? `${rowsToInsert.length} photos ajoutées` : "Média ajouté", description: isPortfolioDestination ? "Le portfolio a été mis à jour." : "Le contenu a été ajouté avec succès." });
+      setNewItem({ sections: [filter], title: '', description: '', image: null, images: [], videoUrl: '', thumbnail: null, targetBranch: '' });
       const fileInput = document.getElementById(`file-upload-${poleName}`);
       if(fileInput) fileInput.value = "";
       
@@ -415,18 +440,35 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
         return itemSections.some(s => s.toLowerCase() === filter.toLowerCase());
       });
 
+  const destinationCounts = Object.fromEntries(availableSections.map((section) => [section.id, items.filter((item) => parseSections(item.section).includes(section.id)).length]));
+  const activeDestination = availableSections.find((section) => section.id === filter) || availableSections[0];
+  const chooseWorkspace = (sectionId) => {
+    setFilter(sectionId);
+    setNewItem((current) => ({ ...current, sections: [sectionId], targetBranch: sectionId === 'branch_card' ? current.targetBranch : '' }));
+  };
+
   // Helper to determine if we should show tags input
   const supportsTags = tableName === 'vision_images' || tableName === 'website_images';
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-8">
       
+      <section className="rounded-3xl border border-slate-200 bg-slate-50 p-4 md:p-6">
+        <div className="mb-5"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">Organisation des médias</p><h3 className="mt-1 text-xl font-bold text-slate-900">Quelle zone voulez-vous gérer ?</h3><p className="mt-1 text-sm text-slate-500">Chaque espace correspond à un endroit précis de la page publique. Choisissez une zone avant d’ajouter ou de modifier ses médias.</p></div>
+        <div className={`grid gap-3 ${availableSections.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 xl:grid-cols-3'}`}>
+          {availableSections.map((section) => {
+            const selected = filter === section.id;
+            return <button key={section.id} type="button" onClick={() => chooseWorkspace(section.id)} className={`relative rounded-2xl border p-5 text-left transition ${selected ? 'border-blue-800 bg-[#0b1739] text-white shadow-lg' : 'border-slate-200 bg-white text-slate-900 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-sm'}`}><div className="flex items-start justify-between gap-3"><span className={`flex h-11 w-11 items-center justify-center rounded-xl ${selected ? 'bg-white/10 text-white' : 'bg-blue-50 text-blue-800'}`}>{React.createElement(section.icon,{className:'h-5 w-5'})}</span><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${selected ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-600'}`}>{destinationCounts[section.id] || 0} média{destinationCounts[section.id] > 1 ? 's' : ''}</span></div><strong className="mt-4 block">Gérer : {section.label}</strong><span className={`mt-2 block text-xs leading-relaxed ${selected ? 'text-blue-100/70' : 'text-slate-500'}`}>{section.description}</span>{selected && <span className="mt-4 flex items-center text-xs font-semibold text-blue-200"><Check className="mr-1.5 h-3.5 w-3.5" /> Espace actuellement ouvert</span>}</button>;
+          })}
+        </div>
+      </section>
+
       {/* Add Content Form */}
       <Card className="p-6 rounded-xl shadow-lg border border-gray-100">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <h3 className="text-2xl font-bold flex items-center gap-2 text-gray-900">
                 <Plus className="w-6 h-6 text-blue-600" />
-                Add New Content for {poleName}
+                Ajouter dans « {activeDestination?.label} »
             </h3>
             
             <Button 
@@ -438,33 +480,14 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
                 className="bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-blue-300 hover:text-blue-600 shadow-sm"
             >
                 <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Syncing...' : 'Sync from Bucket'}
+                {isSyncing ? 'Synchronisation…' : 'Récupérer les médias existants'}
             </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <Label className="text-base font-medium text-gray-700">Sections (Select where this content appears)</Label>
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 border p-4 rounded-lg bg-gray-50/50 shadow-inner">
-                {availableSections.map((section) => (
-                  <div key={section.id} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={`section-${section.id}`} 
-                      checked={newItem.sections.includes(section.id)}
-                      onCheckedChange={() => toggleSection(section.id)}
-                      className="border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
-                    />
-                    <Label 
-                      htmlFor={`section-${section.id}`} 
-                      className="text-sm font-medium leading-none cursor-pointer flex items-center gap-2 text-gray-700"
-                    >
-                      {React.createElement(section.icon, { className: "w-3.5 h-3.5 text-gray-500" })}
-                      {section.label}
-                    </Label>
-                  </div>
-                ))}
-              </div>
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-800 text-white">{activeDestination && React.createElement(activeDestination.icon,{className:'h-5 w-5'})}</span><div><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Destination sélectionnée</p><strong className="text-sm text-blue-950">{activeDestination?.label}</strong></div></div><p className="mt-3 text-xs leading-relaxed text-blue-800">{activeDestination?.description} Pour changer de destination, utilisez les espaces situés au-dessus.</p></div>
               
               {/* Conditional Tag Input for Branch Cards */}
               {supportsTags && newItem.sections.includes('branch_card') && (
@@ -473,13 +496,13 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
                     animate={{ opacity: 1, height: 'auto' }}
                     className="pt-2"
                 >
-                    <Label className="text-blue-700 font-semibold mb-1 block">Associated Branch (Required for Branch Cards)</Label>
+                    <Label className="text-blue-700 font-semibold mb-1 block">Quelle branche cette carte représente-t-elle ?</Label>
                     <Select 
                         value={newItem.targetBranch} 
                         onValueChange={(val) => setNewItem({...newItem, targetBranch: val})}
                     >
                         <SelectTrigger className="border-blue-200 bg-blue-50">
-                            <SelectValue placeholder="Select which branch this image represents" />
+                            <SelectValue placeholder="Choisir la branche" />
                         </SelectTrigger>
                         <SelectContent>
                             {branchIds.map(branch => (
@@ -487,76 +510,65 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <p className="text-xs text-blue-600 mt-1">This ensures the image appears on the correct card on the homepage.</p>
+                    <p className="text-xs text-blue-600 mt-1">L’image sera utilisée uniquement sur la carte de cette branche.</p>
                 </motion.div>
               )}
             </div>
 
-            <div className="space-y-2 pt-1">
-              <Label htmlFor="title" className="text-gray-700 font-medium">Title</Label>
+              <div className="space-y-2 pt-1">
+              <Label htmlFor="title" className="text-gray-700 font-medium">Titre du média</Label>
               <Input
                 id="title"
                 value={newItem.title}
                 onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                placeholder="e.g., Main Visual"
+                placeholder="Ex. Projet immobilier Pointe-Noire"
                 className="border-gray-300 text-gray-900"
               />
                <div className="space-y-2 mt-4">
-                <Label htmlFor="file-upload" className="text-gray-700 font-medium">Image Upload</Label>
+                <Label htmlFor="file-upload" className="text-gray-700 font-medium">{newItem.sections.includes('video') ? 'Téléverser une vidéo' : newItem.sections.includes('gallery') ? 'Photos du portfolio' : 'Fichier à ajouter'}</Label>
                 <div className="flex gap-2 items-center">
                     <Input
                     id={`file-upload-${poleName}`}
                     type="file"
-                    accept="image/*"
-                    onChange={(e) => setNewItem({ ...newItem, image: e.target.files[0] })}
+                    accept={newItem.sections.includes('video') ? 'video/*' : 'image/*'}
+                    multiple={newItem.sections.includes('gallery')}
+                    onChange={(e) => newItem.sections.includes('gallery') ? setNewItem({ ...newItem, images: Array.from(e.target.files || []) }) : setNewItem({ ...newItem, image: e.target.files[0] })}
                     className="cursor-pointer border-gray-300 text-gray-900"
                     />
                 </div>
-                <p className="text-xs text-gray-500">Supported formats: JPG, PNG, WEBP. Max size: 5MB</p>
+                <p className="text-xs text-gray-500">{newItem.sections.includes('video') ? 'Vidéo MP4 ou WebM au format paysage.' : newItem.sections.includes('gallery') ? 'Sélectionnez une ou plusieurs photos JPG, PNG ou WEBP.' : 'Image JPG, PNG ou WEBP de bonne qualité.'}</p>
+                {newItem.sections.includes('gallery') && newItem.images.length > 0 && <div className="rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">{newItem.images.length} photo{newItem.images.length > 1 ? 's' : ''} sélectionnée{newItem.images.length > 1 ? 's' : ''}</div>}
               </div>
+              {newItem.sections.includes('video') && <div className="mt-5 space-y-5 rounded-2xl border border-violet-200 bg-violet-50/60 p-4"><div><Label htmlFor="video-link" className="font-semibold text-violet-950">Ou coller un lien vidéo</Label><Input id="video-link" type="url" className="mt-2 bg-white" value={newItem.videoUrl} onChange={(e) => setNewItem({ ...newItem, videoUrl: e.target.value })} placeholder="YouTube, Vimeo ou lien direct MP4" /><p className="mt-1.5 text-xs text-violet-700">Si un fichier et un lien sont renseignés, le fichier téléversé sera utilisé.</p></div><div><Label htmlFor="thumbnail-upload" className="font-semibold text-violet-950">Miniature de la vidéo</Label><Input id="thumbnail-upload" type="file" accept="image/*" className="mt-2 bg-white" onChange={(e) => setNewItem({ ...newItem, thumbnail: e.target.files[0] })} /><p className="mt-1.5 text-xs text-violet-700">Image paysage recommandée, affichée avant le lancement de la vidéo.</p></div></div>}
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-gray-700 font-medium">Description</Label>
+            <Label htmlFor="description" className="text-gray-700 font-medium">Description facultative</Label>
             <Textarea
               id="description"
               value={newItem.description}
               onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-              placeholder="A brief description..."
+              placeholder="Décrivez brièvement ce média…"
               className="h-28 border-gray-300 text-gray-900"
             />
           </div>
 
           <Button type="submit" disabled={uploading} className="bg-blue-600 hover:bg-blue-700 text-white shadow-md">
             {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-            {uploading ? 'Uploading...' : 'Add Content Item'}
+            {uploading ? 'Envoi en cours…' : 'Ajouter ce média'}
           </Button>
         </form>
       </Card>
 
       {/* Content List */}
       <div className="space-y-6">
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <h3 className="text-2xl font-bold flex items-center gap-2 text-gray-900">
+        <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-6 md:flex-row md:items-center">
+            <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700">Zone ouverte : {activeDestination?.label}</p><h3 className="mt-1 flex items-center gap-2 text-2xl font-bold text-gray-900">
                 <Layout className="w-6 h-6 text-gray-600" />
-                Existing Content
-                <span className="text-base font-normal text-gray-500 ml-2">({items.length} items)</span>
-            </h3>
-            
-            <div className="w-full md:w-auto overflow-x-auto">
-                <Tabs value={filter} onValueChange={setFilter} className="w-full">
-                    <TabsList className="inline-flex w-auto min-w-full md:min-w-0 bg-gray-50 p-1.5 rounded-lg border border-gray-200">
-                        <TabsTrigger value="all" className="text-xs md:text-sm px-3 py-1.5">All</TabsTrigger>
-                        {availableSections.map(section => (
-                          <TabsTrigger key={section.id} value={section.id} className="flex items-center gap-1.5 text-xs md:text-sm px-3 py-1.5">
-                             {React.createElement(section.icon, { className: "w-3 h-3" })}
-                             {section.label}
-                          </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
-            </div>
+                {activeDestination?.label}
+                <span className="ml-2 text-base font-normal text-gray-500">({filteredItems.length})</span>
+            </h3><p className="mt-2 text-sm text-slate-500">Vous voyez uniquement les médias utilisés dans cette zone de la page.</p></div>
         </div>
 
         {loading ? (
@@ -590,12 +602,7 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
                           {isNouveauConcept ? (
                             <span className="text-xs px-2 py-1 rounded-full uppercase font-bold shadow-md bg-purple-600/90 text-white backdrop-blur-sm">Nouveau Concept</span>
                           ) : (
-                             itemSections.slice(0, 3).map(sectionId => (
-                                <span key={sectionId} className={`text-xs px-2 py-1 rounded-full uppercase font-bold shadow-md flex items-center gap-1 bg-blue-600/90 text-white backdrop-blur-sm`}>
-                                    {getSectionIcon(sectionId)}
-                                    {sectionId.replace('_', ' ')}
-                                </span>
-                             ))
+                             <><span className="flex items-center gap-1 rounded-full bg-blue-700/90 px-2.5 py-1 text-xs font-bold text-white shadow-md backdrop-blur-sm">{getSectionIcon(filter)}{sectionCatalog[filter]?.label || filter}</span>{itemSections.filter((sectionId) => sectionId !== filter).length > 0 && <span className="max-w-[180px] rounded-lg bg-black/65 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur-sm">Aussi utilisé dans : {itemSections.filter((sectionId) => sectionId !== filter).map((sectionId) => sectionCatalog[sectionId]?.label || sectionId).join(', ')}</span>}</>
                           )}
                       </div>
                       {/* Show associated branch if available */}
@@ -608,7 +615,7 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
                       )}
                     </div>
                     <div className="p-5">
-                      <h4 className="font-bold text-lg text-gray-900 mb-2 truncate" title={item.title}>{item.title || 'Untitled'}</h4>
+                      <h4 className="font-bold text-lg text-gray-900 mb-2 truncate" title={item.title}>{item.title || 'Média sans titre'}</h4>
                       <div className="flex justify-between items-center border-t border-gray-100 pt-4 gap-2">
                          <span className="text-xs text-gray-500">{new Date(item.created_at).toLocaleDateString()}</span>
                          <div className="flex gap-2">
@@ -632,7 +639,7 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
             {filteredItems.length === 0 && (
                 <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
                     <ImageIcon className="w-16 h-16 text-gray-400 mb-4" />
-                    <p className="text-lg font-medium">No content found for this filter.</p>
+                    <p className="text-lg font-medium">Aucun média dans cette destination.</p>
                 </div>
             )}
           </div>
@@ -643,35 +650,28 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
       <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
         <DialogContent className="sm:max-w-[550px] bg-white">
             <DialogHeader>
-            <DialogTitle>Edit Content Details</DialogTitle>
-            <DialogDescription>Update the metadata for this item.</DialogDescription>
+            <DialogTitle>Modifier le média</DialogTitle>
+            <DialogDescription>Un même média peut être utilisé dans plusieurs zones. Cochez ou décochez chaque destination selon vos besoins.</DialogDescription>
             </DialogHeader>
             {editingItem && (
             <form onSubmit={handleUpdate} className="space-y-4 py-4">
                 <div className="space-y-3">
-                    <Label>Sections</Label>
-                    <div className="grid grid-cols-2 gap-3 border p-3 rounded-lg bg-gray-50">
+                    <div><Label>Destinations sur le site</Label><p className="mt-1 text-xs text-slate-500">Vous pouvez sélectionner plusieurs destinations en même temps.</p></div>
+                    <div className="grid gap-2 rounded-xl bg-slate-50 p-3">
                         {availableSections.map((section) => (
-                        <div key={section.id} className="flex items-center space-x-2">
-                            <Checkbox 
-                            id={`edit-section-${section.id}`} 
-                            checked={parseSections(editingItem.section).includes(section.id)}
-                            onCheckedChange={() => toggleSection(section.id, true)}
-                            />
-                            <Label htmlFor={`edit-section-${section.id}`} className="text-sm cursor-pointer">{section.label}</Label>
-                        </div>
+                        <button key={section.id} type="button" onClick={() => toggleSection(section.id, true)} className={`flex items-center gap-3 rounded-xl border p-3 text-left transition ${parseSections(editingItem.section).includes(section.id) ? 'border-blue-700 bg-blue-50 text-blue-900 ring-1 ring-blue-700/10' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'}`}>{React.createElement(section.icon,{className:'h-4 w-4'})}<span><span className="block text-sm font-semibold">{section.label}</span><span className="mt-0.5 block text-[11px] font-normal text-slate-500">{section.description}</span></span>{parseSections(editingItem.section).includes(section.id) ? <span className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-800 text-white"><Check className="h-3.5 w-3.5" /></span> : <span className="ml-auto h-6 w-6 shrink-0 rounded-full border-2 border-slate-200" />}</button>
                         ))}
                     </div>
                      {/* Edit Tag for Branch Cards */}
                     {supportsTags && parseSections(editingItem.section).includes('branch_card') && (
                         <div className="pt-2">
-                            <Label className="text-blue-700 font-semibold mb-1 block">Associated Branch</Label>
+                            <Label className="text-blue-700 font-semibold mb-1 block">Branche associée</Label>
                             <Select 
                                 value={editingItem.tags?.[0] || ''} 
                                 onValueChange={(val) => setEditingItem({...editingItem, tags: [val]})}
                             >
                                 <SelectTrigger className="border-blue-200 bg-blue-50">
-                                    <SelectValue placeholder="Select branch" />
+                                    <SelectValue placeholder="Choisir la branche" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {branchIds.map(branch => (
@@ -683,17 +683,17 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
                     )}
                 </div>
                 <div className="space-y-2">
-                    <Label>Title</Label>
+                    <Label>Titre du média</Label>
                     <Input
                         value={editingItem.title || ''}
                         onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
                     />
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>Cancel</Button>
+                    <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>Annuler</Button>
                     <Button type="submit" disabled={uploading}>
                         {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                        Save Changes
+                        Enregistrer
                     </Button>
                 </DialogFooter>
             </form>
@@ -707,8 +707,8 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
       }}>
         <DialogContent className="sm:max-w-[450px] bg-white">
             <DialogHeader>
-                <DialogTitle>Replace Image</DialogTitle>
-                <DialogDescription>Upload a new image to replace the existing one.</DialogDescription>
+                <DialogTitle>Remplacer le fichier</DialogTitle>
+                <DialogDescription>Le nouveau fichier remplacera celui actuellement visible sur le site.</DialogDescription>
             </DialogHeader>
             {replacingImageItem && (
                 <form onSubmit={handleReplaceImageSubmit} className="space-y-6 py-4">
@@ -723,10 +723,10 @@ const PoleManager = ({ poleName, tableName, bucketName = 'pole-images' }) => {
                     </div>
                     <Input type="file" accept="image/*" onChange={(e) => setReplacingImageFile(e.target.files[0])} required />
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => { setReplacingImageItem(null); setReplacingImageFile(null); }}>Cancel</Button>
+                        <Button type="button" variant="outline" onClick={() => { setReplacingImageItem(null); setReplacingImageFile(null); }}>Annuler</Button>
                         <Button type="submit" disabled={uploading || !replacingImageFile} className="bg-green-600 hover:bg-green-700 text-white">
                             {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                            Upload & Replace
+                            Remplacer le fichier
                         </Button>
                     </DialogFooter>
                 </form>

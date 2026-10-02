@@ -17,7 +17,7 @@ const CheckoutPage = ({ language }) => {
   const { id: productId } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
-  const [waNumber, setWaNumber] = useState('242000000000');
+  const [waNumber, setWaNumber] = useState('242061736596');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const { getBranchWhatsApp } = useBranchWhatsApp();
@@ -131,7 +131,7 @@ const CheckoutPage = ({ language }) => {
 
         // 3. Redirect
         setTimeout(() => {
-            window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
+            window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank', 'noopener,noreferrer');
             navigate('/boutique');
         }, 1500);
 

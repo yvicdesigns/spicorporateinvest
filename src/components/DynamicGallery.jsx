@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { motion } from 'framer-motion';
-import { Loader2, ImageOff, ZoomIn, X, AlertTriangle, RefreshCw } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Loader2, ImageOff, ZoomIn, X, AlertTriangle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
-const GalleryItem = ({ img, index, setSelectedImage }) => {
+const GalleryItem = ({ img, index, setSelectedIndex, variant = 'grid', totalImages }) => {
   const [hasError, setHasError] = useState(false);
 
   if (hasError) {
@@ -31,8 +31,9 @@ const GalleryItem = ({ img, index, setSelectedImage }) => {
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all"
-      onClick={() => setSelectedImage(img)}
+      data-testid={`portfolio-item-${index}`}
+      className={`group relative bg-gray-100 overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500 ${variant === 'editorial' ? `aspect-square rounded-xl md:aspect-auto md:rounded-2xl ${index >= 6 ? 'hidden' : index >= 4 ? 'hidden md:block' : ''} ${index === 0 ? 'md:col-span-2 md:row-span-2 md:min-h-[540px]' : 'md:min-h-[260px]'}` : 'aspect-square rounded-lg'}`}
+      onClick={() => setSelectedIndex(index)}
     >
       <img
         src={img.image_url}
@@ -49,6 +50,22 @@ const GalleryItem = ({ img, index, setSelectedImage }) => {
           <p className="text-white text-sm font-medium truncate">{img.title}</p>
         </div>
       )}
+      {variant === 'editorial' && index === 3 && totalImages > 4 && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/55 text-center text-white backdrop-blur-[1px] md:hidden">
+          <div>
+            <strong className="block text-2xl font-bold">+{totalImages - 4}</strong>
+            <span className="text-xs font-medium uppercase tracking-wider">photos</span>
+          </div>
+        </div>
+      )}
+      {variant === 'editorial' && index === 5 && totalImages > 6 && (
+        <div className="absolute inset-0 hidden items-center justify-center bg-black/55 text-center text-white backdrop-blur-[1px] md:flex">
+          <div>
+            <strong className="block text-3xl font-bold">+{totalImages - 6}</strong>
+            <span className="text-sm font-medium uppercase tracking-wider">photos</span>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };
@@ -57,12 +74,22 @@ const DynamicGallery = ({
   tableName = 'website_images', 
   sectionFilter = 'gallery', 
   tagFilter = null,
-  orderBy = 'display_order' 
+  orderBy = 'display_order',
+  variant = 'grid'
 }) => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null);
   const [error, setError] = useState(null);
+  const selectedImage = selectedIndex !== null ? images[selectedIndex] : null;
+
+  const showPreviousImage = () => {
+    setSelectedIndex((current) => (current - 1 + images.length) % images.length);
+  };
+
+  const showNextImage = () => {
+    setSelectedIndex((current) => (current + 1) % images.length);
+  };
 
   useEffect(() => {
     fetchImages();
@@ -154,19 +181,21 @@ const DynamicGallery = ({
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className={variant === 'editorial' ? 'grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-5 lg:grid-cols-3' : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'}>
         {images.map((img, index) => (
           <GalleryItem 
             key={img.id} 
             img={img} 
             index={index} 
-            setSelectedImage={setSelectedImage} 
+            setSelectedIndex={setSelectedIndex}
+            variant={variant}
+            totalImages={images.length}
           />
         ))}
       </div>
-
-      <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+      <Dialog open={selectedIndex !== null} onOpenChange={(open) => !open && setSelectedIndex(null)}>
         <DialogContent className="max-w-4xl w-[95vw] p-0 bg-transparent border-none shadow-none text-white overflow-hidden">
+             <DialogTitle className="sr-only">{selectedImage?.title || 'Aperçu du portfolio'}</DialogTitle>
              <div className="relative w-full h-full flex items-center justify-center">
                 {selectedImage && (
                     <motion.div 
@@ -185,7 +214,7 @@ const DynamicGallery = ({
                             }}
                         />
                         <button 
-                            onClick={() => setSelectedImage(null)}
+                            onClick={() => setSelectedIndex(null)}
                             className="absolute -top-4 -right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 backdrop-blur-sm transition-all"
                         >
                             <X className="w-5 h-5" />
@@ -195,6 +224,29 @@ const DynamicGallery = ({
                                 {selectedImage.title && <h4 className="font-bold text-lg">{selectedImage.title}</h4>}
                                 {selectedImage.description && <p className="text-sm text-gray-200">{selectedImage.description}</p>}
                             </div>
+                        )}
+                        {images.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={showPreviousImage}
+                              className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/80 md:left-5 md:h-12 md:w-12"
+                              aria-label="Image précédente"
+                            >
+                              <ChevronLeft className="h-6 w-6" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={showNextImage}
+                              className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/80 md:right-5 md:h-12 md:w-12"
+                              aria-label="Image suivante"
+                            >
+                              <ChevronRight className="h-6 w-6" />
+                            </button>
+                            <div className="absolute right-4 top-4 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                              {selectedIndex + 1} / {images.length}
+                            </div>
+                          </>
                         )}
                     </motion.div>
                 )}

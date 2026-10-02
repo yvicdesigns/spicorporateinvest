@@ -11,6 +11,42 @@
   --secondary-color: #d4af37; /* Gold */
 }
 
+/* Unified visual language for legacy dashboard managers. */
+.dashboard-modern {
+  --dash-ink: #0f172a;
+  --dash-muted: #64748b;
+  --dash-border: #e2e8f0;
+  --dash-soft: #f8fafc;
+}
+
+.dashboard-modern input,
+.dashboard-modern textarea,
+.dashboard-modern select,
+.dashboard-modern [role="combobox"] {
+  border-color: var(--dash-border);
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.03);
+}
+
+.dashboard-modern input:focus,
+.dashboard-modern textarea:focus,
+.dashboard-modern select:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+}
+
+.dashboard-modern .shadow-lg,
+.dashboard-modern .shadow-xl,
+.dashboard-modern .shadow-md {
+  box-shadow: 0 12px 35px -28px rgb(15 23 42 / 0.45);
+}
+
+.dashboard-modern [class*="rounded-xl"],
+.dashboard-modern [class*="rounded-2xl"] {
+  border-color: var(--dash-border);
+}
+
 
 body {
   @apply bg-white text-gray-800;
@@ -66,4 +102,15 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

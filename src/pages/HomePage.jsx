@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { ArrowRight, Building, Car, Flower, Utensils, Scissors, FolderHeart as HandHeart, Loader2 } from 'lucide-react';
+import { ArrowRight, Building, Car, Utensils, Scissors, FolderHeart as HandHeart, Loader2, Leaf, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import HomeSlider from '@/components/HomeSlider';
 import DynamicGallery from '@/components/DynamicGallery';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
+import { getBranchBrand } from '@/lib/branchBranding';
 
 const HomePage = ({ language }) => {
   const [branchImages, setBranchImages] = useState({});
   const [loading, setLoading] = useState(true);
+  const [managedContent, setManagedContent] = useState(null);
   const navigate = useNavigate();
 
   const translations = {
@@ -32,6 +34,8 @@ const HomePage = ({ language }) => {
         wellness: { title: 'Atelier 5', subtitle: 'Art du Bien-Être', description: 'Bien-être et qualité de vie.' },
         agro: { title: 'La Manne', subtitle: 'Agriculture d\'Avenir', description: 'Production agro-pastorale durable.' },
         food: { title: 'SPI Alim', subtitle: 'Gastronomie & Terroirs', description: 'Épicerie fine et produits d\'exception.' },
+        zen: { title: 'Zen Sens', subtitle: 'Parfums & Fragrances', description: 'Une sélection de parfums et de créations olfactives de caractère.' },
+        energy: { title: 'SPI Energy', subtitle: 'Pétrole & Services', description: 'Solutions pétrolières fiables au service des entreprises et des territoires.' },
         discover: 'Explorer le pôle'
       },
       values: {
@@ -68,6 +72,8 @@ const HomePage = ({ language }) => {
         wellness: { title: 'Atelier 5', subtitle: 'The Art of Wellness', description: 'Wellness and quality of life.' },
         agro: { title: 'La Manne', subtitle: 'Agriculture of the Future', description: 'Sustainable agro-pastoral production.' },
         food: { title: 'SPI Alim', subtitle: 'Gastronomy & Terroirs', description: 'Fine grocery and exceptional products.' },
+        zen: { title: 'Zen Sens', subtitle: 'Perfumes & Fragrances', description: 'A selection of distinctive perfumes and olfactory creations.' },
+        energy: { title: 'SPI Energy', subtitle: 'Oil & Services', description: 'Reliable petroleum solutions serving businesses and territories.' },
         discover: 'Explore the division'
       },
       values: {
@@ -88,7 +94,13 @@ const HomePage = ({ language }) => {
     }
   };
 
-  const t = translations[language];
+  const baseTranslation = translations[language];
+  const languageOverrides = managedContent?.[language] || {};
+  const t = Object.fromEntries(Object.entries(baseTranslation).map(([key, value]) => {
+    if (!languageOverrides[key] || typeof value !== 'object') return [key, value];
+    const cleaned = Object.fromEntries(Object.entries(languageOverrides[key]).filter(([, fieldValue]) => Boolean(fieldValue)));
+    return [key, { ...value, ...cleaned }];
+  }));
 
   const defaultImages = {
     'sci-renaissance': 'https://images.unsplash.com/photo-1619425054357-781d9be681a0',
@@ -96,7 +108,9 @@ const HomePage = ({ language }) => {
     'nouveau-concept': 'https://images.unsplash.com/photo-1698307663492-928dcdd4d960',
     'atelier-5': 'https://images.unsplash.com/photo-1653919551040-ad7759283d50',
     'la-manne': 'https://images.unsplash.com/photo-1643621204445-2681f6815937',
-    'spi-alim': 'https://images.unsplash.com/photo-1672702959512-af149104c388'
+    'spi-alim': 'https://images.unsplash.com/photo-1672702959512-af149104c388',
+    'zen-sens': 'https://images.unsplash.com/photo-1541643600914-78b084683601',
+    'spi-energy': 'https://images.unsplash.com/photo-1581092160562-40aa08e78837'
   };
 
   useEffect(() => {
@@ -131,6 +145,15 @@ const HomePage = ({ language }) => {
     fetchBranchImages();
   }, []);
 
+  useEffect(() => {
+    supabase
+      .from('footer_configuration')
+      .select('content')
+      .eq('pole_id', 'homepage')
+      .maybeSingle()
+      .then(({ data }) => setManagedContent(data?.content?.homepage_content || null));
+  }, []);
+
   const getImage = (id) => branchImages[id] || defaultImages[id];
 
   const branchItems = [
@@ -138,8 +161,9 @@ const HomePage = ({ language }) => {
     { id: 'sci-espoir', icon: HandHeart, title: t.branches.sciEspoir.title, subtitle: t.branches.sciEspoir.subtitle, description: t.branches.sciEspoir.description, color: 'text-cyan-500' },
     { id: 'nouveau-concept', icon: Car, title: t.branches.mobility.title, subtitle: t.branches.mobility.subtitle, description: t.branches.mobility.description, color: 'text-indigo-500' },
     { id: 'atelier-5', icon: Scissors, title: t.branches.wellness.title, subtitle: t.branches.wellness.subtitle, description: t.branches.wellness.description, color: 'text-purple-500' },
-    { id: 'la-manne', icon: Flower, title: t.branches.agro.title, subtitle: t.branches.agro.subtitle, description: t.branches.agro.description, color: 'text-green-500' },
-    { id: 'spi-alim', icon: Utensils, title: t.branches.food.title, subtitle: t.branches.food.subtitle, description: t.branches.food.description, color: 'text-amber-500' }
+    { id: 'spi-alim', icon: Utensils, title: t.branches.food.title, subtitle: t.branches.food.subtitle, description: t.branches.food.description },
+    { id: 'zen-sens', icon: Leaf, title: t.branches.zen.title, subtitle: t.branches.zen.subtitle, description: t.branches.zen.description },
+    { id: 'spi-energy', icon: Zap, title: t.branches.energy.title, subtitle: t.branches.energy.subtitle, description: t.branches.energy.description }
   ];
 
   const cardVariants = {
@@ -178,7 +202,9 @@ const HomePage = ({ language }) => {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {branchItems.map((branch, index) => (
+            {branchItems.map((branch, index) => {
+              const brand = getBranchBrand(branch.id);
+              return (
               <motion.div
                 key={branch.id}
                 custom={index}
@@ -199,22 +225,22 @@ const HomePage = ({ language }) => {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                   <div className="absolute bottom-4 left-4">
-                    <div className={`flex items-center justify-center w-12 h-12 bg-white/95 backdrop-blur-sm rounded-xl shadow-md ${branch.color}`}>
-                      <branch.icon className="w-6 h-6" />
+                    <div className="flex items-center justify-center w-16 h-16 bg-white/95 backdrop-blur-sm rounded-xl shadow-md overflow-hidden p-1.5" style={{ color: brand.primary }}>
+                      {brand.logo ? <img src={brand.logo} alt={`Logo ${branch.title}`} className="w-full h-full object-contain" /> : <branch.icon className="w-7 h-7" />}
                     </div>
                   </div>
                 </div>
                 <div className="p-6 flex flex-col flex-grow">
-                  <span className={`font-bold ${branch.color} mb-1`}>{branch.subtitle}</span>
-                  <h3 className="text-2xl font-bold text-blue-900 mb-3">{branch.title}</h3>
+                  <span className="font-bold mb-1" style={{ color: brand.secondary }}>{branch.subtitle}</span>
+                  <h3 className="text-2xl font-bold mb-3" style={{ color: brand.primary }}>{branch.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-grow">{branch.description}</p>
-                  <button className="mt-auto inline-flex items-center font-semibold text-blue-900 group-hover:text-blue-600 transition-colors">
+                  <button className="mt-auto inline-flex items-center font-semibold transition-colors" style={{ color: brand.primary }}>
                     {t.branches.discover}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </button>
                 </div>
               </motion.div>
-            ))}
+            )})}
           </div>
         </div>
       </section>

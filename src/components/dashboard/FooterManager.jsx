@@ -51,9 +51,10 @@ const FooterManager = ({ poles = [] }) => {
   });
 
   // Combine static global option with dynamic poles
+  const branchIds = ['sci-renaissance', 'sci-espoir', 'nouveau-concept', 'atelier-5', 'spi-alim', 'la-manne', 'zen-sens', 'spi-energy'];
   const footerOptions = [
-    { id: 'global', label: 'Global Site Footer' },
-    ...poles.filter(p => p.id !== 'footer').map(p => ({ id: p.id, label: `${p.label} Footer` }))
+    { id: 'global', label: 'Pied de page général du site' },
+    ...poles.filter((pole) => branchIds.includes(pole.id)).map((pole) => ({ id: pole.id, label: `Coordonnées — ${pole.label}` }))
   ];
 
   useEffect(() => {
@@ -171,8 +172,8 @@ const FooterManager = ({ poles = [] }) => {
     >
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-           <h2 className="text-2xl font-bold text-gray-900">Footer Settings</h2>
-           <p className="text-sm text-gray-600 mt-1">Manage footer content and contact info for the site or specific branches.</p>
+           <h2 className="text-2xl font-bold text-gray-900">Pied de page et coordonnées</h2>
+           <p className="text-sm text-gray-600 mt-1">« Général » modifie le footer de tout le site. Une branche modifie les coordonnées affichées sur sa propre page.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
             <div className="relative">
@@ -189,7 +190,7 @@ const FooterManager = ({ poles = [] }) => {
             </div>
             <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all">
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Save Changes
+            Enregistrer
             </Button>
         </div>
       </div>
@@ -197,14 +198,14 @@ const FooterManager = ({ poles = [] }) => {
       {loading ? (
         <div className="flex justify-center items-center py-20 bg-white rounded-xl shadow-lg border border-gray-100">
             <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-            <p className="ml-3 text-lg text-gray-600">Loading footer data...</p>
+            <p className="ml-3 text-lg text-gray-600">Chargement des coordonnées…</p>
         </div>
       ) : (
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-white p-2 rounded-xl shadow-sm border border-gray-200">
-          <TabsTrigger value="general" className="text-sm font-medium data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-colors duration-200 rounded-lg">General & Contact</TabsTrigger>
-          <TabsTrigger value="social" className="text-sm font-medium data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-colors duration-200 rounded-lg">Social Media</TabsTrigger>
-          <TabsTrigger value="content" className="text-sm font-medium data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-colors duration-200 rounded-lg">Text Content</TabsTrigger>
+          <TabsTrigger value="general" className="text-sm font-medium data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-colors duration-200 rounded-lg">Coordonnées</TabsTrigger>
+          <TabsTrigger value="social" className="text-sm font-medium data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-colors duration-200 rounded-lg">Réseaux sociaux</TabsTrigger>
+          <TabsTrigger value="content" className="text-sm font-medium data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-colors duration-200 rounded-lg">Textes</TabsTrigger>
         </TabsList>
 
         {/* General & Contact Tab */}

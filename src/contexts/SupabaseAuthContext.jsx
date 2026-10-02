@@ -21,7 +21,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      handleSession(session);
+      if (!session) {
+        handleSession(null);
+        return;
+      }
+
+      // Refresh once on load so server-managed app_metadata (roles and permissions)
+      // is immediately reflected after an administrator changes access rights.
+      const { data, error } = await supabase.auth.refreshSession();
+      handleSession(error ? session : data.session);
     };
 
     getSession();

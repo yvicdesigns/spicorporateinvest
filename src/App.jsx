@@ -24,6 +24,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/components/ui/use-toast';
 import { Wifi, WifiOff } from 'lucide-react';
 import { detectCrawler } from '@/utils/detectCrawler';
+import LatestNewsPopup from '@/components/LatestNewsPopup';
 
 function App() {
   const [language, setLanguage] = useState('fr');
@@ -134,6 +135,7 @@ function App() {
         </main>
         
         {showMainFooter && <Footer language={language} />}
+        <LatestNewsPopup />
         <Toaster />
       </div>
     </HelmetProvider>

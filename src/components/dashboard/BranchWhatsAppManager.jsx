@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import { SHOP_BRANCHES } from '@/lib/shopConstants';
 import { useBranchWhatsApp } from '@/hooks/useBranchWhatsApp';
 
-const BranchWhatsAppManager = () => {
+const BranchWhatsAppManager = ({ initialBranchId = null }) => {
   const [configs, setConfigs] = useState({});
   const [initialLoading, setInitialLoading] = useState(true);
   const { updateBranchWhatsApp, loading: saving } = useBranchWhatsApp();
@@ -112,28 +112,29 @@ const BranchWhatsAppManager = () => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto space-y-6"
+      className="mx-auto max-w-4xl space-y-6"
     >
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex items-center gap-4">
-        <div className="bg-green-100 p-3 rounded-full">
+      <div className="flex items-center gap-4 rounded-2xl bg-gradient-to-r from-emerald-950 to-emerald-800 p-6 text-white">
+        <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/15">
           <MessageCircle className="h-6 w-6 text-green-600" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Branch WhatsApp Settings</h2>
-          <p className="text-gray-600">Manage individual WhatsApp contact numbers for each shop branch.</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">Canal de conversion</p>
+          <h2 className="mt-1 text-2xl font-bold">Numéro WhatsApp {initialBranchId ? 'de la branche' : 'des branches'}</h2>
+          <p className="mt-1 text-sm text-emerald-100/70">Utilisé par le bouton de demande et le formulaire WhatsApp de la page publique.</p>
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {SHOP_BRANCHES.map(branch => {
+        {SHOP_BRANCHES.filter((branch) => !initialBranchId || branch.id === initialBranchId).map(branch => {
           const config = configs[branch.id];
           return (
-            <Card key={branch.id} className="shadow-md overflow-hidden hover:shadow-lg transition-shadow border-t-4 border-t-green-500">
-              <CardHeader className="bg-gray-50 pb-4 border-b border-gray-100">
+            <Card key={branch.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <CardHeader className="border-b border-slate-100 bg-slate-50/70 pb-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-lg">{branch.name}</CardTitle>
-                    <CardDescription>ID: {branch.id}</CardDescription>
+                    <CardDescription>Page publique / {branch.name}</CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
                     <Switch 
@@ -141,7 +142,7 @@ const BranchWhatsAppManager = () => {
                       onCheckedChange={(val) => handleConfigChange(branch.id, 'is_enabled', val)}
                     />
                     <Label className="text-xs font-medium cursor-pointer">
-                      {config.is_enabled ? 'Active' : 'Disabled'}
+                      {config.is_enabled ? 'Actif' : 'Désactivé'}
                     </Label>
                   </div>
                 </div>
@@ -150,7 +151,7 @@ const BranchWhatsAppManager = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-gray-500" /> WhatsApp Number
+                      <Phone className="w-4 h-4 text-gray-500" /> Numéro WhatsApp
                     </Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">+</span>
@@ -163,7 +164,7 @@ const BranchWhatsAppManager = () => {
                         disabled={!config.is_enabled}
                       />
                     </div>
-                    <p className="text-[11px] text-gray-500">Must be exactly 12 digits starting with 242</p>
+                    <p className="text-[11px] text-gray-500">12 chiffres, en commençant par 242.</p>
                   </div>
                   <Button 
                     onClick={() => handleSave(branch.id)}
@@ -171,7 +172,7 @@ const BranchWhatsAppManager = () => {
                     disabled={saving || (!config.is_enabled && !config.whatsapp_number && configs[branch.id].whatsapp_number === '')}
                   >
                     {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    Save Branch Config
+                    Enregistrer ce numéro
                   </Button>
                 </div>
               </CardContent>

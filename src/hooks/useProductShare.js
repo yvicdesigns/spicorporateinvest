@@ -35,7 +35,7 @@ export const useProductShare = () => {
     }
   };
 
-  const shareViaWhatsApp = (product, branchWhatsAppNumber = '242000000000', language = 'fr') => {
+  const shareViaWhatsApp = (product, branchWhatsAppNumber = '242061736596', language = 'fr') => {
     const price = new Intl.NumberFormat('fr-FR', { 
       style: 'currency', 
       currency: 'XAF', 
@@ -46,7 +46,7 @@ export const useProductShare = () => {
       ? `Bonjour, je suis intéressé par le produit: *${product.name}* (${price}). Pouvez-vous me donner plus d'informations?`
       : `Hello, I am interested in the product: *${product.name}* (${price}). Can you give me more information?`;
       
-    window.open(`https://wa.me/${branchWhatsAppNumber}?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://wa.me/${branchWhatsAppNumber}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
   };
 
   return { getShareUrl, getShareText, copyToClipboard, shareViaWhatsApp };
